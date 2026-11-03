@@ -34,6 +34,7 @@ export default function OnlineGame({ code, role, onLeave }) {
       <div className="card lobby">
         <h2>Connection problem</h2>
         <p className="hint">{error}</p>
+        <p className="hint">If the browser console says <code>ERR_CONNECTION_REFUSED</code> for the Supabase WebSocket, this is usually outside the game code: confirm the Supabase project is active, then retry without a VPN, proxy, or restrictive network. If the error is for <code>localhost:5173</code>, restart the Vite development server.</p>
         <button className="btn primary" onClick={onLeave}>Back to lobby</button>
       </div>
     );

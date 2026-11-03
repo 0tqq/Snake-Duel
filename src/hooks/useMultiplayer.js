@@ -152,14 +152,19 @@ export function useMultiplayer({ code, role }) {
         H.rematch[1] = true;
         if (H.rematch[0]) startRound(); else publish();
       })
-      .subscribe(async (status) => {
+      .subscribe(async (status, subscribeError) => {
         if (dead) return;
         if (status === 'SUBSCRIBED') {
           await channel.track({ id, role, joinedAt });
           setConn('ready');
           if (isHost) setSnap({ ...toSnapshot(H.state), msgSeq: 0, round: 1, phase: 'waiting', countdown: 3, rematch: [false, false], peer: false });
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          fail('Could not connect to the game server. Check your Supabase settings and internet.');
+          // Keep the provider's diagnostic in the console; never expose the API key.
+          console.error('[Snake Duel] Supabase Realtime subscription failed:', { status, message: subscribeError?.message || subscribeError?.reason || null, error: subscribeError });
+          const detail = subscribeError?.message || subscribeError?.reason;
+          fail(status === 'TIMED_OUT'
+            ? 'Supabase Realtime did not respond in time. Check whether the project is active and whether your network allows WebSockets.'
+            : `Supabase Realtime could not establish a connection${detail ? `: ${detail}` : '.'} Check the project status and try another network (for example, a mobile hotspot).`);
         } else if (status === 'CLOSED' && !dead) {
           fail('Connection closed.');
         }
